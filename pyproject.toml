@@ -1,0 +1,95 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "coffee-shop-api"
+version = "0.1.0"
+description = "A FastAPI-based coffee shop user management API"
+readme = "README.md"
+requires-python = ">=3.8"
+authors = [
+    {name = "Coffee Shop API Team"}
+]
+license = {text = "MIT"}
+keywords = ["fastapi", "coffee-shop", "user-management", "api"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+]
+
+dependencies = [
+    "fastapi==0.111.0",
+    "slowapi==0.1.9",
+    "prometheus-fastapi-instrumentator==7.1.0",
+    "uvicorn[standard]==0.30.0",
+    "sqlalchemy[asyncio]==2.0.30",
+    "asyncpg==0.29.0",
+    "passlib[bcrypt]==1.7.4",
+    "python-jose==3.3.0",
+    "pydantic==2.7.1",
+    "pydantic-settings==2.7.1",
+    "alembic==1.13.1",
+    "celery==5.3.6",
+    "redis==5.0.4",
+    "jinja2==3.1.2",
+    "email-validator==2.1.0",
+    "python-json-logger==2.0.7",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest==7.4.3",
+    "pytest-asyncio==0.21.1",
+    "pytest-cov==4.1.0",
+    "httpx==0.25.2",
+]
+
+[project.urls]
+Homepage = "https://github.com/your-username/coffee-shop-api"
+Repository = "https://github.com/your-username/coffee-shop-api"
+Issues = "https://github.com/your-username/coffee-shop-api/issues"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["app*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+    "--cov=app",
+    "--cov-report=term-missing",
+    "--cov-report=xml",
+]
+
+[tool.coverage.run]
+source = ["app"]
+omit = [
+    "*/tests/*",
+    "*/test_*.py",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]
