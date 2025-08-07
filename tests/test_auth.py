@@ -14,13 +14,15 @@ from app.core.config import settings
 from app.core.security import create_access_token, create_refresh_token
 from app.models.user import User
 from app.schemas.token import TokenData, TokenType
-from app.schemas.user import UserCreate, UserInDB, UserRole
+from app.schemas.user import UserCreate, UserInDB
+from app.models.user import UserRole
 from app.services.auth import AuthService
 
 # Test data
 TEST_EMAIL = "test@example.com"
 TEST_PASSWORD = "TestPassword123!"  # Meets password policy
-TEST_FULL_NAME = "Test User"
+TEST_FIRST_NAME = "Test"
+TEST_LAST_NAME = "User"
 ADMIN_EMAIL = "admin@example.com"
 ADMIN_PASSWORD = "AdminPassword123!"
 
@@ -29,30 +31,27 @@ async def test_register_user(client, db_session: AsyncSession):
     """Test user registration."""
     # Test successful registration
     response = client.post(
-        "/api/v1/auth/register",
+        "/api/v1/auth/signup",
         json={
             "email": TEST_EMAIL,
             "password": TEST_PASSWORD,
-            "full_name": TEST_FULL_NAME,
+            "first_name": TEST_FIRST_NAME,
+            "last_name": TEST_LAST_NAME,
         },
     )
     assert response.status_code == status.HTTP_201_CREATED
     data = response.json()
-    assert "id" in data
-    assert data["email"] == TEST_EMAIL
-    assert data["full_name"] == TEST_FULL_NAME
-    assert data["is_active"] is True
-    assert data["is_verified"] is False  # Email verification required
-    assert data["role"] == UserRole.USER.value  # Default role
-    assert "hashed_password" not in data  # Password should never be returned
+    assert "message" in data
+    assert "registered successfully" in data["message"]
 
     # Test duplicate email registration
     response = client.post(
-        "/api/v1/auth/register",
+        "/api/v1/auth/signup",
         json={
             "email": TEST_EMAIL,
             "password": "AnotherPassword123!",
-            "full_name": "Duplicate User",
+            "first_name": "Duplicate",
+            "last_name": "User",
         },
     )
     assert response.status_code == status.HTTP_400_BAD_REQUEST
@@ -61,11 +60,12 @@ async def test_register_user(client, db_session: AsyncSession):
     # Test password policy validation
     weak_password = "weak"
     response = client.post(
-        "/api/v1/auth/register",
+        "/api/v1/auth/signup",
         json={
             "email": "new@example.com",
             "password": weak_password,
-            "full_name": "Weak Password User",
+            "first_name": "Weak",
+            "last_name": "User",
         },
     )
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
@@ -80,7 +80,8 @@ async def test_login_user(client, db_session: AsyncSession):
         UserCreate(
             email=TEST_EMAIL,
             password=TEST_PASSWORD,
-            full_name=TEST_FULL_NAME,
+            first_name=TEST_FIRST_NAME,
+            last_name=TEST_LAST_NAME,
         )
     )
     
@@ -92,11 +93,10 @@ async def test_login_user(client, db_session: AsyncSession):
     # Test successful login
     response = client.post(
         "/api/v1/auth/login",
-        data={
-            "username": TEST_EMAIL,
+        json={
+            "email": TEST_EMAIL,
             "password": TEST_PASSWORD,
         },
-        headers={"Content-Type": "application/x-www-form-urlencoded"},
     )
     assert response.status_code == status.HTTP_200_OK, response.text
     data = response.json()
@@ -132,16 +132,16 @@ async def test_login_user(client, db_session: AsyncSession):
         UserCreate(
             email="unverified@example.com",
             password=TEST_PASSWORD,
-            full_name="Unverified User",
+            first_name="Unverified",
+            last_name="User",
         )
     )
     response = client.post(
         "/api/v1/auth/login",
-        data={
-            "username": "unverified@example.com",
+        json={
+            "email": "unverified@example.com",
             "password": TEST_PASSWORD,
         },
-        headers={"Content-Type": "application/x-www-form-urlencoded"},
     )
     assert response.status_code == status.HTTP_400_BAD_REQUEST
     assert "email not verified" in response.json()["detail"].lower()
@@ -149,25 +149,23 @@ async def test_login_user(client, db_session: AsyncSession):
     # Test invalid password
     response = client.post(
         "/api/v1/auth/login",
-        data={
-            "username": TEST_EMAIL,
+        json={
+            "email": TEST_EMAIL,
             "password": "wrongpassword",
         },
-        headers={"Content-Type": "application/x-www-form-urlencoded"},
     )
-    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
     assert "incorrect email or password" in response.json()["detail"].lower()
 
     # Test non-existent user
     response = client.post(
         "/api/v1/auth/login",
-        data={
-            "username": "nonexistent@example.com",
+        json={
+            "email": "nonexistent@example.com",
             "password": "somepassword",
         },
-        headers={"Content-Type": "application/x-www-form-urlencoded"},
     )
-    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
     assert "incorrect email or password" in response.json()["detail"].lower()
 
 @pytest.mark.asyncio
@@ -179,7 +177,8 @@ async def test_read_users_me(client, db_session: AsyncSession):
         UserCreate(
             email=TEST_EMAIL,
             password=TEST_PASSWORD,
-            full_name=TEST_FULL_NAME,
+            first_name=TEST_FIRST_NAME,
+            last_name=TEST_LAST_NAME,
         )
     )
     
@@ -190,8 +189,7 @@ async def test_read_users_me(client, db_session: AsyncSession):
     # Get access token
     login_response = client.post(
         "/api/v1/auth/login",
-        data={"username": TEST_EMAIL, "password": TEST_PASSWORD},
-        headers={"Content-Type": "application/x-www-form-urlencoded"},
+        json={"email": TEST_EMAIL, "password": TEST_PASSWORD},
     )
     access_token = login_response.json()["access_token"]
     
@@ -203,7 +201,8 @@ async def test_read_users_me(client, db_session: AsyncSession):
     assert response.status_code == status.HTTP_200_OK, response.text
     data = response.json()
     assert data["email"] == TEST_EMAIL
-    assert data["full_name"] == TEST_FULL_NAME
+    assert data["first_name"] == TEST_FIRST_NAME
+    assert data["last_name"] == TEST_LAST_NAME
     assert "hashed_password" not in data
     assert "password" not in data
     

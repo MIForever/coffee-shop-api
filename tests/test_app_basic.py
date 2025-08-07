@@ -1,6 +1,3 @@
-"""
-Basic FastAPI application tests that don't require database connections.
-"""
 import pytest
 from fastapi.testclient import TestClient
 from app.main import app

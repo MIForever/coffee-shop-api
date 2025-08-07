@@ -1,6 +1,3 @@
-"""
-Pytest configuration and fixtures for testing the FastAPI application.
-"""
 import asyncio
 import os
 from typing import AsyncGenerator, Generator
@@ -117,5 +114,6 @@ def test_user():
     return {
         "email": "test@example.com",
         "password": "testpassword123",
-        "full_name": "Test User"
+        "first_name": "Test",
+        "last_name": "User"
     }
