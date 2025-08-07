@@ -10,6 +10,7 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy import event
 
 # Set test environment before importing app modules
 os.environ["ENVIRONMENT"] = "test"
@@ -18,7 +19,8 @@ os.environ["POSTGRES_HOST"] = "localhost"
 os.environ["POSTGRES_PORT"] = "5432"
 
 from app.core.config import settings
-from app.db.database import Base, get_db
+from app.models.base import Base
+from app.db.deps import get_db
 from app.main import app as _app
 
 # Use a test database
