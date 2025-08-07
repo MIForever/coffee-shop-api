@@ -10,9 +10,9 @@ class Settings(BaseSettings):
     ENVIRONMENT: str = "production"
     
     # Security and Authentication
-    SECRET_KEY: str
-    JWT_SECRET_KEY: str
-    JWT_REFRESH_SECRET_KEY: str
+    SECRET_KEY: str = "test-secret-key-for-testing-only"
+    JWT_SECRET_KEY: str = "test-jwt-secret-key-for-testing-only"
+    JWT_REFRESH_SECRET_KEY: str = "test-jwt-refresh-secret-key-for-testing-only"
     JWT_ALGORITHM: str = "HS256"
     JWT_ISSUER: str = "Coffee Shop API"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
@@ -21,9 +21,9 @@ class Settings(BaseSettings):
     CORS_ORIGINS: list[AnyHttpUrl] = ["http://localhost:3000"]
     
     # Database
-    POSTGRES_USER: str
-    POSTGRES_PASSWORD: str
-    POSTGRES_DB: str
+    POSTGRES_USER: str = "postgres"
+    POSTGRES_PASSWORD: str = "postgres"
+    POSTGRES_DB: str = "coffee_shop"
     POSTGRES_HOST: str = "db"
     POSTGRES_PORT: str = "5432"
     DATABASE_URL: Optional[str] = None
