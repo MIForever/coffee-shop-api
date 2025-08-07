@@ -53,7 +53,7 @@ async def update_user(
         raise HTTPException(status_code=404, detail="User not found")
 
     # Restrict non-admins to updating only their own data
-    if current_user.role != "admin" and current_user.id != user_id:
+    if current_user.role.value != "ADMIN" and current_user.id != user_id:
         raise HTTPException(status_code=403, detail="Not allowed to update this user")
 
     update_data = updates.model_dump(exclude_unset=True)

@@ -1,21 +1,18 @@
 """
 Tests for authentication endpoints.
 """
-import time
 from datetime import datetime, timedelta
 
 import pytest
 from fastapi import status
-from fastapi.security import OAuth2PasswordRequestForm
 from jose import jwt
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.core.security import create_access_token, create_refresh_token
-from app.models.user import User
+from app.models.user import User, UserRole
 from app.schemas.token import TokenData, TokenType
-from app.schemas.user import UserCreate, UserInDB
-from app.models.user import UserRole
+from app.schemas.user import UserCreate
 from app.services.auth import AuthService
 
 # Test data
